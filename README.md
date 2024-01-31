@@ -1,0 +1,1 @@
+# pyscopg-assign
