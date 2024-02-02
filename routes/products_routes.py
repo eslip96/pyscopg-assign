@@ -4,15 +4,15 @@ from controllers import products_controller
 
 products= Blueprint('products', __name__)
 
-@products.route('/products/create_product', methods=['POST'])
+@products.route('/product', methods=['POST'])
 def create_product():
     return products_controller.create_product()
 
-@products.route('/products/all_products', methods=['GET'])
+@products.route('/products', methods=['GET'])
 def get_all_products():
     return products_controller.get_all_products()
 
-@products.route('/products/active_products', methods=['GET'])
+@products.route('/products/active', methods=['GET'])
 def get_active_products():
     return products_controller.get_active_products()
 

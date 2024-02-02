@@ -37,7 +37,7 @@ def get_all_categories():
         }
         category_list.append(category_data)
 
-    return jsonify({'categories': category_list})
+    return jsonify({'categories': category_list}), 200
 
 def update_category(category_id):
     data = request.form if request.form else request.get_json()
@@ -47,7 +47,7 @@ def update_category(category_id):
     category = cursor.fetchone()
 
     if not category:
-        return jsonify({"message": f"no category found with category_id {category_id}"}), 404
+        return jsonify({"message": f"no category found with category id {category_id}"}), 404
 
     if 'category_name' in data:
         category_name = data['category_name']
@@ -66,18 +66,31 @@ def update_category(category_id):
 
     conn.commit()
 
-    return jsonify({"message": f'category with category_id {category_id} has been updated'}), 200
+    return jsonify({"message": f'category with category id {category_id} has been updated'}), 200
 
 def get_category_by_id(category_id):
     cursor.execute("SELECT * FROM categories WHERE category_id = %s;", [category_id])
     category = cursor.fetchone()
 
     if not category:
-        return jsonify({"message": f"no category found with category_id {category_id}"}), 404
+        return jsonify({"message": f"no category found with category id {category_id}"}), 404
 
     category_data = {
         'category_id': category[0],
         'category_name': category[1],
     }
 
-    return jsonify({'category': category_data})
+    return jsonify({'category': category_data}), 200
+
+def delete_category(category_id):
+    cursor.execute("SELECT * FROM categories WHERE category_id = %s", [category_id])
+    category = cursor.fetchone()
+
+    if not category:
+        return jsonify({'message': f"no category found category ID {category_id}"}), 500
+    
+
+    cursor.execute("DELETE FROM categories WHERE category_id =  %s", [category_id])
+    conn.commit()
+
+    return jsonify({'message': f'category with category ID {category_id} has been deleted'}), 200

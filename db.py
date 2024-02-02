@@ -49,7 +49,6 @@ def create_tables():
             product_id SERIAL REFERENCES products(product_id),
             category_id SERIAL REFERENCES categories(category_id),
             PRIMARY KEY (product_id, category_id)
-            -- Add other fields as needed
         );
     """)
     conn.commit()

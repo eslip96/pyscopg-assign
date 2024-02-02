@@ -5,7 +5,7 @@ from controllers import companies_controller
 companies = Blueprint('companies', __name__)
 
 
-@companies.route('/companies', methods=['POST'])
+@companies.route('/company', methods=['POST'])
 def add_company():
     return companies_controller.add_company()
 
@@ -20,3 +20,7 @@ def update_company(company_id):
 @companies.route('/companies/<company_id>', methods=['GET'])
 def get_company_by_id(company_id):
     return companies_controller.get_company_by_id(company_id)
+
+@companies.route('/companies/delete/<company_id>', methods=['DELETE'])
+def delete_company(company_id):
+    return companies_controller.delete_company(company_id)
