@@ -7,6 +7,7 @@ database_name = os.getenv("DATABASE_NAME")
 conn = psycopg2.connect(f'dbname={database_name}')
 cursor = conn.cursor()
 
+
 def create_category():
     data = request.form if request.form else request.get_json()
     category_name = data.get("category_name")
@@ -22,7 +23,7 @@ def create_category():
     category_id = cursor.fetchone()[0]
     conn.commit()
 
-    return jsonify({"message": f'category {category_name} with ID {category_id} has been added to the database'}), 201
+    return jsonify({"message": f'category {category_name} with id {category_id} has been added to the database'}), 201
 
 
 def get_all_categories():
@@ -39,9 +40,9 @@ def get_all_categories():
 
     return jsonify({'categories': category_list}), 200
 
+
 def update_category(category_id):
     data = request.form if request.form else request.get_json()
-
 
     cursor.execute("SELECT * FROM categories WHERE category_id = %s;", [category_id])
     category = cursor.fetchone()
@@ -60,13 +61,14 @@ def update_category(category_id):
         existing_category = cursor.fetchone()
 
         if existing_category:
-            return jsonify({"message": f"category with category_id {new_category_id} already exists."}), 400
+            return jsonify({"message": f"category with category id {new_category_id} already exists."}), 400
 
         cursor.execute("UPDATE categories SET category_id = %s WHERE category_id = %s;", (new_category_id, category_id))
 
     conn.commit()
 
     return jsonify({"message": f'category with category id {category_id} has been updated'}), 200
+
 
 def get_category_by_id(category_id):
     cursor.execute("SELECT * FROM categories WHERE category_id = %s;", [category_id])
@@ -82,15 +84,15 @@ def get_category_by_id(category_id):
 
     return jsonify({'category': category_data}), 200
 
+
 def delete_category(category_id):
     cursor.execute("SELECT * FROM categories WHERE category_id = %s", [category_id])
     category = cursor.fetchone()
 
     if not category:
-        return jsonify({'message': f"no category found category ID {category_id}"}), 500
-    
+        return jsonify({'message': f"no category found category id {category_id}"}), 500
 
     cursor.execute("DELETE FROM categories WHERE category_id =  %s", [category_id])
     conn.commit()
 
-    return jsonify({'message': f'category with category ID {category_id} has been deleted'}), 200
+    return jsonify({'message': f'category with category id {category_id} has been deleted'}), 200

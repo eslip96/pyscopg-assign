@@ -7,6 +7,7 @@ database_name = os.getenv("DATABASE_NAME")
 conn = psycopg2.connect(f'dbname={database_name}')
 cursor = conn.cursor()
 
+
 def create_product():
     data = request.form if request.form else request.json
 
@@ -17,7 +18,7 @@ def create_product():
     company_id = data.get("company_id")
 
     if not product_name or not company_id:
-        return jsonify({"message": "product_name and company id are required fields"}), 400
+        return jsonify({"message": "product name and company id are required fields"}), 400
 
     cursor.execute("SELECT * FROM companies WHERE company_id = %s;", [company_id])
     company = cursor.fetchone()
@@ -32,6 +33,7 @@ def create_product():
     conn.commit()
 
     return jsonify({"message": f'product {product_name} has been added to the db'}), 201
+
 
 def get_all_products():
     cursor.execute("""
@@ -69,10 +71,10 @@ def get_all_products():
 
     return jsonify({'products': products_list}), 200
 
+
 def get_active_products():
     cursor.execute("SELECT product_id, product_name FROM products WHERE active=true;")
     active_products = cursor.fetchall()
-
 
     product_list = [
         {'product_id': product[0], 'product_name': product[1]}
@@ -80,6 +82,7 @@ def get_active_products():
     ]
 
     return jsonify({'active_products': product_list}), 200
+
 
 def get_product_by_id(product_id):
     cursor.execute("""
@@ -128,7 +131,7 @@ def update_product(product_id):
     product = cursor.fetchone()
 
     if not product:
-        return jsonify({"message": f"no product found with product_id {product_id}"}), 404
+        return jsonify({"message": f"no product found with product id {product_id}"}), 404
 
     if 'product_name' in data:
         new_product_name = data['product_name']
@@ -151,17 +154,15 @@ def update_product(product_id):
     if 'active' in data:
         active = data['active']
         cursor.execute("UPDATE products SET active = %s WHERE product_id = %s;", (active, product_id))
-    
+
     if 'company_id' in data:
         new_company_id = data['company_id']
 
-       
         cursor.execute("SELECT * FROM companies WHERE company_id = %s;", [new_company_id])
         company = cursor.fetchone()
         if not company:
             return jsonify({"message": f"no company found with that company id {new_company_id}"}), 400
 
-      
         if 'product_id' in data:
             new_product_id = data['product_id']
             cursor.execute("SELECT * FROM products WHERE product_id = %s AND product_id != %s;", (new_product_id, product_id))
@@ -171,10 +172,10 @@ def update_product(product_id):
 
         cursor.execute("UPDATE products SET company_id = %s WHERE product_id = %s;", (new_company_id, product_id))
 
-    
     conn.commit()
 
     return jsonify({"message": f'product with product id {product_id} has been updated'}), 200
+
 
 def get_products_by_company_id(company_id):
 
@@ -197,6 +198,7 @@ def get_products_by_company_id(company_id):
         products_list.append(product_data)
 
     return jsonify({'products': products_list}), 200
+
 
 def delete_product(product_id):
     cursor.execute("SELECT * FROM products WHERE product_id = %s;", [product_id])

@@ -7,6 +7,7 @@ database_name = os.getenv("DATABASE_NAME")
 conn = psycopg2.connect(f'dbname={database_name}')
 cursor = conn.cursor()
 
+
 def add_company():
     data = request.form if request.form else request.get_json()
     company_name = data.get("company_name")
@@ -16,7 +17,6 @@ def add_company():
 
     cursor.execute("SELECT * FROM companies WHERE company_name=%s", [company_name])
     result = cursor.fetchone()
-
 
     cursor.execute("INSERT INTO companies (company_name) VALUES (%s)", (company_name,))
     conn.commit()
@@ -57,10 +57,10 @@ def update_company(company_id):
 
         cursor.execute("UPDATE companies SET company_name = %s WHERE company_id = %s;", (new_company_name, company_id,))
 
-
     conn.commit()
 
     return jsonify({"message": f'company with company id {company_id} has been updated'}), 200
+
 
 def get_company_by_id(company_id):
 
@@ -77,16 +77,17 @@ def get_company_by_id(company_id):
 
     return jsonify({'company': company_data}), 200
 
+
 def delete_company(company_id):
     cursor.execute("SELECT * FROM companies WHERE company_id = %s;", [company_id])
     company = cursor.fetchone()
 
     if not company:
         return jsonify({"message": f"no company found with company id {company_id}"}), 404
-    
+
     cursor.execute("DELETE FROM products WHERE company_id = %s", [company_id])
 
     cursor.execute("DELETE FROM companies WHERE company_id = %s;", [company_id])
     conn.commit()
 
-    return jsonify({"message": f'company with company id {company_id} has been deleted along with products matching the same company ID'}), 200
+    return jsonify({"message": f'company with company id {company_id} has been deleted along with products matching the same company id'}), 200
