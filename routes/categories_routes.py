@@ -15,16 +15,16 @@ def get_all_categories():
     return categories_controller.get_all_categories()
 
 
-@categories.route('/categories/<category_id>', methods=['PUT'])
+@categories.route('/category/<category_id>', methods=['PUT'])
 def update_category(category_id):
     return categories_controller.update_category(category_id)
 
 
-@categories.route('/categories/<category_id>', methods=['GET'])
+@categories.route('/category/<category_id>', methods=['GET'])
 def get_category_by_id(category_id):
     return categories_controller.get_category_by_id(category_id)
 
 
-@categories.route('/categories/delete/<category_id>', methods=['DELETE'])
+@categories.route('/category/delete/<category_id>', methods=['DELETE'])
 def delete_category(category_id):
     return categories_controller.delete_category(category_id)
