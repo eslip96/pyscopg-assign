@@ -86,13 +86,12 @@ def get_category_by_id(category_id):
 
 
 def delete_category(category_id):
-    cursor.execute("SELECT * FROM categories WHERE category_id = %s", [category_id])
-    category = cursor.fetchone()
-
-    if not category:
-        return jsonify({'message': f"no category found category id {category_id}"}), 500
-
-    cursor.execute("DELETE FROM categories WHERE category_id =  %s", [category_id])
-    conn.commit()
-
-    return jsonify({'message': f'category with category id {category_id} has been deleted'}), 200
+    try:
+        cursor.execute("DELETE FROM productcategoriesxref WHERE category_id = %s", [category_id])
+        cursor.execute("DELETE FROM categories WHERE category_id = %s", [category_id])
+        conn.commit()
+        return jsonify({'message': f'category with category id {category_id} has been deleted, associated products remain'}), 200
+    except psycopg2.Error as e:
+        print(e)
+        conn.rollback()
+        return jsonify({'message': 'failed to delete category'}), 400

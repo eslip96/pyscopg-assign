@@ -16,9 +16,10 @@ def create_product():
     price = data.get("price")
     active = data.get("active", True)
     company_id = data.get("company_id")
+    category_id = data.get("category_id")
 
-    if not product_name or not company_id:
-        return jsonify({"message": "product name and company id are required fields"}), 400
+    if not product_name or not company_id or not category_id:
+        return jsonify({"message": "product name, company id, and category ids are required fields"}), 400
 
     cursor.execute("SELECT * FROM companies WHERE company_id = %s;", [company_id])
     company = cursor.fetchone()
@@ -30,6 +31,11 @@ def create_product():
         VALUES (%s, %s, %s, %s, %s)
     """, (product_name, description, price, active, company_id))
 
+    cursor.execute("""
+        INSERT INTO productcategoriesxref (product_id, category_id)
+        VALUES (LASTVAL(), %s)
+    """, [category_id])
+
     conn.commit()
 
     return jsonify({"message": f'product {product_name} has been added to the db'}), 201
@@ -37,22 +43,10 @@ def create_product():
 
 def get_all_products():
     cursor.execute("""
-        SELECT
-            products.product_id,
-            products.product_name,
-            products.description,
-            products.price,
-            products.active,
-            products.company_id,
-            array_agg(categories.category_name) AS categories
-        FROM
-            products
-        LEFT JOIN
-            productcategoriesxref ON products.product_id = productcategoriesxref.product_id
-        LEFT JOIN
-            categories ON productcategoriesxref.category_id = categories.category_id
-        GROUP BY
-            products.product_id;
+            SELECT p.product_id, p.product_name, p.description, p.price, p.active, p.company_id, pc.category_id
+            FROM products p
+            LEFT JOIN productcategoriesxref pc ON p.product_id = pc.product_id
+            GROUP BY p.product_id, p.product_name, p.description, p.price, p.active, p.company_id, pc.category_id;
     """)
     products = cursor.fetchall()
 
@@ -65,7 +59,7 @@ def get_all_products():
             'price': product[3],
             'active': product[4],
             'company_id': product[5],
-            'categories': product[6],
+            'category_id': product[6],
         }
         products_list.append(product_data)
 
@@ -81,7 +75,7 @@ def get_active_products():
         for product in active_products
     ]
 
-    return jsonify({'active_products': product_list}), 200
+    return jsonify({'active products': product_list}), 200
 
 
 def get_product_by_id(product_id):
@@ -99,7 +93,7 @@ def get_product_by_id(product_id):
         LEFT JOIN
             productcategoriesxref ON products.product_id = productcategoriesxref.product_id
         LEFT JOIN
-            categories ON productcategoriesxref.category_id = categories.category_id
+            (SELECT category_id, category_name FROM categories) AS categories ON productcategoriesxref.category_id = categories.category_id
         WHERE
             products.product_id = %s
         GROUP BY
@@ -118,7 +112,7 @@ def get_product_by_id(product_id):
         'price': product[3],
         'active': product[4],
         'company_id': product[5],
-        'categories': product[6],
+        'category_id': product[6],
     }
 
     return jsonify({'product': product_data}), 200
@@ -168,7 +162,7 @@ def update_product(product_id):
             cursor.execute("SELECT * FROM products WHERE product_id = %s AND product_id != %s;", (new_product_id, product_id))
             existing_product_id = cursor.fetchone()
             if existing_product_id:
-                return jsonify({"message": f"product ID {new_product_id} is already used by another product"}), 400
+                return jsonify({"message": f"product id {new_product_id} is already used by another product"}), 400
 
         cursor.execute("UPDATE products SET company_id = %s WHERE product_id = %s;", (new_company_id, product_id))
 
@@ -201,13 +195,10 @@ def get_products_by_company_id(company_id):
 
 
 def delete_product(product_id):
-    cursor.execute("SELECT * FROM products WHERE product_id = %s;", [product_id])
-    product = cursor.fetchone()
-
-    if not product:
-        return jsonify({"message": f"no product found with product id {product_id}"}), 404
-
-    cursor.execute("DELETE FROM products WHERE product_id = %s;", [product_id])
-    conn.commit()
-
-    return jsonify({"message": f'product with product id {product_id} has been deleted'}), 200
+    try:
+        cursor.execute("DELETE FROM products WHERE product_id = %s", [product_id])
+        conn.commit()
+        return jsonify({'message': 'product with product id {product_id} has been deleted'}), 200
+    except:
+        conn.rollback()
+        return jsonify({'message': 'failed to delete product'}), 400

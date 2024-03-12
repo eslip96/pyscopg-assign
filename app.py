@@ -15,8 +15,6 @@ app.register_blueprint(categories)
 app.register_blueprint(products)
 
 
-
-
 if __name__ == '__main__':
     create_tables()
-    app.run(host=app_host, port=app_port)
+    app.run(host=app_host, port=app_port, debug=True)

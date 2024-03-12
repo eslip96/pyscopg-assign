@@ -13,7 +13,6 @@ def create_tables():
     conn = psycopg2.connect(f"dbname={database_name}")
     cursor = conn.cursor()
 
-
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS companies (
             company_id SERIAL PRIMARY KEY,
@@ -22,15 +21,13 @@ def create_tables():
     """)
     conn.commit()
 
-
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS categories (
-            category_id SERIAL PRIMARY KEY,
+            category_id INTEGER PRIMARY KEY,
             category_name VARCHAR NOT NULL UNIQUE
         );
     """)
     conn.commit()
-
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS products (
@@ -46,8 +43,8 @@ def create_tables():
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS productcategoriesxref (
-            product_id SERIAL REFERENCES products(product_id),
-            category_id SERIAL REFERENCES categories(category_id),
+            product_id INTEGER REFERENCES products(product_id),
+            category_id INTEGER REFERENCES categories(category_id),
             PRIMARY KEY (product_id, category_id)
         );
     """)
@@ -55,7 +52,6 @@ def create_tables():
 
     print("Tables created")
 
+
 if __name__ == "__main__":
     create_tables()
-
-

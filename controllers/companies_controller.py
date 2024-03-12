@@ -79,15 +79,12 @@ def get_company_by_id(company_id):
 
 
 def delete_company(company_id):
-    cursor.execute("SELECT * FROM companies WHERE company_id = %s;", [company_id])
-    company = cursor.fetchone()
-
-    if not company:
-        return jsonify({"message": f"no company found with company id {company_id}"}), 404
-
-    cursor.execute("DELETE FROM products WHERE company_id = %s", [company_id])
-
-    cursor.execute("DELETE FROM companies WHERE company_id = %s;", [company_id])
-    conn.commit()
-
-    return jsonify({"message": f'company with company id {company_id} has been deleted along with products matching the same company id'}), 200
+    try:
+        cursor.execute("DELETE FROM product_categories WHERE product_id IN (SELECT product_id FROM products WHERE company_id = %s)", [company_id])
+        cursor.execute("DELETE FROM products WHERE company_id = %s", [company_id])
+        cursor.execute("DELETE FROM companies WHERE company_id = %s", [company_id])
+        conn.commit()
+        return jsonify({"message": f'company with company id {company_id} and associated products have been deleted'}), 200
+    except:
+        conn.rollback()
+        return jsonify({'message': 'failed to delete company'}), 400
